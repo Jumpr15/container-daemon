@@ -7,16 +7,33 @@ import (
 	"strconv"
 	// "net/netip"
 	// "net"
-	// "net/http"
+	"net/http"
 )
 
 type HTTPServer struct {
 	MasterAddress string
+	ListenerPort int
 	ReqChan chan string
 }
 
 func (s *HTTPServer) SetupListeners() {
-	
+	// num containers
+	http.HandleFunc("/containerNum", func(w http.ResponseWriter, r *http.Request) {
+
+	})
+
+	// set container config
+	http.HandleFunc("/containerConfig", func(w http.ResponseWriter, r *http.Request) {
+
+	})
+
+	// health check
+	http.HandleFunc("/health", func(w http.ResponseWriter, r *http.Request) {
+
+	})
+
+	log.Fatal(http.ListenAndServe(fmt.Sprintf(":" + strconv.Itoa(ListenerPort)), nil)) // chane port
+
 }
 
 func (s *HTTPServer) SetupAndConnectMethod() {
@@ -33,6 +50,7 @@ func (s *HTTPServer) GetChan() (chan string) {
 func New(masterAddress string) (*HTTPServer) {
 	s := HTTPServer{
 		MasterAddress: masterAddress,
+		ListenerPort: 8080,
 		ReqChan: make(chan string),
 	}
 	return &s
@@ -50,7 +68,7 @@ type NetworkInterface interface {
 // startup HTTP Listener Services
 func main() {
 	masterAddr := *(flag.String("masterAddress", "localhost", "ip of master machine"))
-	masterPort := *(flag.Int("masterPort", 8080, "port of master machine"))
+	masterPort := *(flag.Int("masterPort", 8000, "port of master machine"))
 
 	flag.Parse()
 
