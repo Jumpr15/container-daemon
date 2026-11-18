@@ -3,13 +3,10 @@ package main
 import (
 	"log"
 	"flag"
+	"net/netip"
 	// "net"
 	// "net/http"
 )
-
-type MasterConfig struct {
-	Endpoint // some network type
-}
 
 type ContainerConfig struct {
 	Instances int
@@ -20,14 +17,32 @@ type HTTPServer struct {
 	MasterConfig
 }
 
+// change to one channel
+func (s *HTTPServer) SetupAndConnectMethod() {
+	// http call with s.masterAddr
+	// creates channels for servers to pipe requests into
+	// sets up all servers 
+	// stores all corresponding channel details for later retrieval
+}
 
+func (s *HTTPServer) GetHeartbeatChan() (chan string) {
 
+}
+
+func (s *HTTPServer) GetContainerConfigChan() (chan int) {
+
+}
+
+func (s *HTTPServer) GetWorkerConfigChan() (chan string){
+
+}
+// struct justs addr netip.Addr 
 // implements a method to expose channels from which network requests are piped through
 type NetworkInterface interface {
-	SetupAndConnectMethod // should call master + store master details for other methods to access
-	HeartbeatMethod() chan string // string chan as placeholder
-	ContainerAlterationMethod() chan int
-	WorkerAlterationMethod() chan string
+	SetupAndConnectMethod() // should call master 
+	GetHeartbeatChan() chan string // string chan as placeholder
+	GetContainerConfigChan() chan int
+	GetWorkerConfigChan() chan string
 } 
 // all take in required network values to create network listeners/servers => return channels where values are piped through
 // disaggregate between communication type: http/rpc etc.
