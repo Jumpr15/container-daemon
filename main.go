@@ -1,24 +1,24 @@
 package main
 
 import (
+	"fmt"
 	"log"
 	"flag"
-	"net/netip"
+	"strconv"
+	// "net/netip"
 	// "net"
 	// "net/http"
 )
 
-type ContainerConfig struct {
-	Instances int
-	// ...
-}
-
 type HTTPServer struct {
-	MasterConfig
+	MasterAddress string
 	ReqChan chan string
 }
 
-// change to one channel
+func (s *HTTPServer) SetupListeners() {
+	
+}
+
 func (s *HTTPServer) SetupAndConnectMethod() {
 	// http call with s.masterAddr
 	// create channel to pipe requests into
@@ -30,11 +30,14 @@ func (s *HTTPServer) GetChan() (chan string) {
 	return s.ReqChan
 }
 
-func New() (s *HTTPServer) {
-
+func New(masterAddress string) (*HTTPServer) {
+	s := HTTPServer{
+		MasterAddress: masterAddress,
+		ReqChan: make(chan string),
+	}
+	return &s
 }
 
-// struct justs addr netip.Addr 
 // implements a method to expose channels from which network requests are piped through
 type NetworkInterface interface {
 	SetupAndConnectMethod() // should call master 
@@ -46,7 +49,7 @@ type NetworkInterface interface {
 // connectToMaster
 // startup HTTP Listener Services
 func main() {
-	masterAddr := *(flag.String("masterAddress", "localhost:6767", "ip of master machine"))
+	masterAddr := *(flag.String("masterAddress", "localhost", "ip of master machine"))
 	masterPort := *(flag.Int("masterPort", 8080, "port of master machine"))
 
 	flag.Parse()
@@ -54,6 +57,13 @@ func main() {
 	log.Printf("Instance started")
 	log.Println(masterAddr, masterPort)
 
+	// currently only ipv4 handling ** very brittle
+	masterAddress := fmt.Sprintf(masterAddr + ":" + strconv.Itoa(masterPort)) 
+	log.Println(masterAddress)
+
 	// create httpserver
+	server := New(masterAddress)
+	log.Println(server)
+	log.Println(server.GetChan())
 	// call httpserver.setup
 }
