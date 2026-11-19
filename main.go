@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"log"
 	"flag"
+	"json"
 	"strconv"
 	// "net/netip"
 	// "net"
@@ -13,27 +14,53 @@ import (
 type HTTPServer struct {
 	MasterAddress string
 	ListenerPort int
-	ReqChan chan string
+	ReqChan chan any
 }
+
+type containerNum int
+type containerConfig struct {}
 
 func (s *HTTPServer) SetupListeners() {
 	// num containers
 	http.HandleFunc("/containerNum", func(w http.ResponseWriter, r *http.Request) {
+		var num containerNum
 
+		err := json.NewDecoder(r.Body).Decode(&num)
+		if err != nil {
+			http.Error(w, err.Error(), http.StatusBadRequest)
+			return
+		}
+
+		log.Println(num)
+		
+		// pass to channel
 	})
 
 	// set container config
 	http.HandleFunc("/containerConfig", func(w http.ResponseWriter, r *http.Request) {
+		var config containerConfig 
+
+		err := json.NewDecoder(r.Body).Decode(&config)
+		if err != nil {
+			http.Error(w, err.Error(), http.StatusBadRequest)
+			return
+		}
+
+		log.Println(config)
 
 	})
 
 	// health check
 	http.HandleFunc("/health", func(w http.ResponseWriter, r *http.Request) {
-
+		
 	})
 
-	log.Fatal(http.ListenAndServe(fmt.Sprintf(":" + strconv.Itoa(ListenerPort)), nil)) // chane port
+	log.Fatal(http.ListenAndServe(fmt.Sprintf(":" + strconv.Itoa(s.ListenerPort)), nil)) // chane port
 
+}
+
+func (s *HTTPServer) SetupClient() {
+	// create struct var that acts like a http client => Later extend to client pools maybe?
 }
 
 func (s *HTTPServer) SetupAndConnectMethod() {
@@ -43,7 +70,7 @@ func (s *HTTPServer) SetupAndConnectMethod() {
 	return 
 }
 
-func (s *HTTPServer) GetChan() (chan string) {
+func (s *HTTPServer) GetChan() (chan any) {
 	return s.ReqChan
 }
 
@@ -51,7 +78,7 @@ func New(masterAddress string) (*HTTPServer) {
 	s := HTTPServer{
 		MasterAddress: masterAddress,
 		ListenerPort: 8080,
-		ReqChan: make(chan string),
+		ReqChan: make(chan any),
 	}
 	return &s
 }
@@ -62,9 +89,6 @@ type NetworkInterface interface {
 	GetChan() chan string
 } 
 
-
-
-// connectToMaster
 // startup HTTP Listener Services
 func main() {
 	masterAddr := *(flag.String("masterAddress", "localhost", "ip of master machine"))
