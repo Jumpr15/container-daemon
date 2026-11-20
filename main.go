@@ -1,10 +1,12 @@
 package main
 
 import (
+	"container-daemon/types"
+
 	"fmt"
 	"log"
 	"flag"
-	"json"
+	"encoding/json"
 	"strconv"
 	// "net/netip"
 	// "net"
@@ -17,13 +19,10 @@ type HTTPServer struct {
 	ReqChan chan any
 }
 
-type containerNum int
-type containerConfig struct {}
-
 func (s *HTTPServer) SetupListeners() {
 	// num containers
 	http.HandleFunc("/containerNum", func(w http.ResponseWriter, r *http.Request) {
-		var num containerNum
+		var num types.ContainerNum
 
 		err := json.NewDecoder(r.Body).Decode(&num)
 		if err != nil {
@@ -34,11 +33,12 @@ func (s *HTTPServer) SetupListeners() {
 		log.Println(num)
 		
 		// pass to channel
+		s.ReqChan <- num
 	})
 
 	// set container config
 	http.HandleFunc("/containerConfig", func(w http.ResponseWriter, r *http.Request) {
-		var config containerConfig 
+		var config types.ContainerConfig 
 
 		err := json.NewDecoder(r.Body).Decode(&config)
 		if err != nil {
@@ -48,19 +48,17 @@ func (s *HTTPServer) SetupListeners() {
 
 		log.Println(config)
 
+		// pass to channel
+		s.ReqChan <- config
 	})
 
 	// health check
 	http.HandleFunc("/health", func(w http.ResponseWriter, r *http.Request) {
-		
+		log.Println("heartbeat!!!")
 	})
 
 	log.Fatal(http.ListenAndServe(fmt.Sprintf(":" + strconv.Itoa(s.ListenerPort)), nil)) // chane port
 
-}
-
-func (s *HTTPServer) SetupClient() {
-	// create struct var that acts like a http client => Later extend to client pools maybe?
 }
 
 func (s *HTTPServer) SetupAndConnectMethod() {
@@ -108,4 +106,6 @@ func main() {
 	log.Println(server)
 	log.Println(server.GetChan())
 	// call httpserver.setup
+	// create http listeners
+	server.SetupListeners() // make goroutine
 }
